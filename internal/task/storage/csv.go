@@ -1,11 +1,13 @@
 package storage
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -29,19 +31,14 @@ func NewCSVStorage() (*CSVStorage, error) {
 }
 
 // CSV Storage methods
-func (cs *CSVStorage) AddTask(task string) error {
+func (cs *CSVStorage) AddTask(task string, isCompleted bool) error {
 	writer := csv.NewWriter(cs.file)
 	defer writer.Flush()
 
-	totalTasks, err := cs.TotalTasks()
-	if err != nil {
-		log.Println(err)
-	}
-
 	newTask := Task{
-		Id:        totalTasks,
+		Id:        int(time.Now().Unix()),
 		Title:     task,
-		Completed: false,
+		Completed: isCompleted,
 		Date:      time.Now(),
 	}
 
@@ -137,9 +134,25 @@ func (cs *CSVStorage) DeleteTask(taskId int) error {
 	return nil
 }
 
-func (cs *CSVStorage) UpdateTask(taskId int, newTask string) error {
+func updateTask(cs *CSVStorage, taskId int, newTask string, toggle bool) error {
+	tasks, err := cs.ListTasks()
+	if err != nil {
+		return err
+	}
+	var curTask Task
+	for _, task := range tasks {
+		if task.Id == taskId {
+			curTask = task
+			break
+		}
+	}
+	var isCompleted bool
+	if toggle {
+		isCompleted = !curTask.Completed
+		newTask = curTask.Title
+	}
 	// Add the new task first
-	if err := cs.AddTask(newTask); err != nil {
+	if err := cs.AddTask(newTask, isCompleted); err != nil {
 		return err
 	}
 	// Delete the specified task
@@ -147,6 +160,14 @@ func (cs *CSVStorage) UpdateTask(taskId int, newTask string) error {
 		return err
 	}
 	return nil
+}
+
+func (cs *CSVStorage) UpdateTask(taskId int, newTask string) error {
+	return updateTask(cs, taskId, newTask, false)
+}
+
+func (cs *CSVStorage) ToggleCompleted(taskId int) error {
+	return updateTask(cs, taskId, "", true)
 }
 
 func (cs *CSVStorage) TotalTasks() (int, error) {
@@ -160,6 +181,54 @@ func (cs *CSVStorage) TotalTasks() (int, error) {
 		return 0, err
 	}
 	return len(records), nil
+}
+
+func promptForConfirmation(message string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print(message)
+
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading input:", err)
+		return false
+	}
+
+	input = strings.TrimSpace(input)
+	input = strings.ToLower(input)
+
+	switch input {
+	case "y", "yes":
+		return true
+	case "n", "no":
+		return false
+	default:
+		fmt.Println("Invalid input. Please type 'yes' or 'no'.")
+		return promptForConfirmation(message)
+	}
+}
+
+func (cs *CSVStorage) Clear() error {
+	if !promptForConfirmation("Are you sure you want to clear all the tasks? (yes/no): ") {
+		fmt.Println("Clear action canceled.")
+		return nil
+	}
+
+	filePath := cs.file.Name()
+	err := cs.file.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close the file: %w", err)
+	}
+
+	err = os.Remove(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to delete the file: %w", err)
+	}
+	cs.file = nil
+
+	fmt.Printf("File %s deleted successfully.\n", filePath)
+
+	return nil
 }
 
 func (cs *CSVStorage) Close() error {

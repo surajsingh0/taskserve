@@ -39,7 +39,7 @@ func NewSQLiteStorage() (*SQLiteStorage, error) {
 }
 
 // SQLite Storage methods
-func (ss *SQLiteStorage) AddTask(title string) error {
+func (ss *SQLiteStorage) AddTask(title string, isCompleted bool) error {
 	currentDate := time.Now()
 
 	_, err := ss.db.Exec("INSERT INTO tasks (title, completed, date) VALUES (?, ?, ?)", title, false, currentDate)
@@ -77,6 +77,16 @@ func (ss *SQLiteStorage) DeleteTask(taskId int) error {
 }
 
 func (ss *SQLiteStorage) UpdateTask(taskId int, newTask string) error {
+	// Yet to be implemented
+	return nil
+}
+
+func (ss *SQLiteStorage) ToggleCompleted(taskId int) error {
+	// Yet to be implemented
+	return nil
+}
+
+func (ss *SQLiteStorage) Clear() error {
 	// Yet to be implemented
 	return nil
 }

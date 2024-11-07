@@ -33,8 +33,8 @@ func NewTaskManager(storageType storage_type.StorageType) (*TaskManager, error) 
 }
 
 // AddTask adds a new task
-func (tm *TaskManager) AddTask(task string) error {
-	return tm.storage.AddTask(task)
+func (tm *TaskManager) AddTask(task string, isCompleted bool) error {
+	return tm.storage.AddTask(task, isCompleted)
 }
 
 // ListTasks lists all tasks
@@ -52,9 +52,19 @@ func (tm *TaskManager) UpdateTask(taskId int, newTask string) error {
 	return tm.storage.UpdateTask(taskId, newTask)
 }
 
+// Toggle task completed
+func (tm *TaskManager) ToggleCompleted(taskId int) error {
+	return tm.storage.ToggleCompleted(taskId)
+}
+
 // TotalTasks returns the total number of tasks
 func (tm *TaskManager) TotalTasks() (int, error) {
 	return tm.storage.TotalTasks()
+}
+
+// Clear all the tasks
+func (tm *TaskManager) Clear() error {
+	return tm.storage.Clear()
 }
 
 // Close closes the storage

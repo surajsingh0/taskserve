@@ -8,10 +8,10 @@ import (
 )
 
 type Task struct {
-	Id        int
-	Title     string
-	Completed bool
-	Date      time.Time
+	Id        int       `json:"id"`
+	Title     string    `json:"title"`
+	Completed bool      `json:"completed"`
+	Date      time.Time `json:"-"`
 }
 
 // Convert Task to an array of strings
@@ -26,11 +26,13 @@ func (t Task) toStringArray() []string {
 
 // TaskStorage defines the interface for task storage operations
 type TaskStorage interface {
-	AddTask(task string) error
+	AddTask(task string, isCompleted bool) error
 	ListTasks() ([]Task, error)
 	DeleteTask(taskId int) error
 	UpdateTask(taskId int, newTask string) error
+	ToggleCompleted(taskId int) error
 	TotalTasks() (int, error)
+	Clear() error
 	Close() error
 }
 

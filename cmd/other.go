@@ -30,7 +30,10 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(deleteCmd)
 	rootCmd.AddCommand(updateCmd)
+	rootCmd.AddCommand(toggleCompletedCmd)
 	rootCmd.AddCommand(totalCmd)
+	rootCmd.AddCommand(clearCmd)
+	rootCmd.AddCommand(webServerCmd)
 }
 
 var addCmd = &cobra.Command{
@@ -57,10 +60,28 @@ var updateCmd = &cobra.Command{
 	Run:   updateCmdRun,
 }
 
+var toggleCompletedCmd = &cobra.Command{
+	Use:   "toggle",
+	Short: "Toggle task's completed status",
+	Run:   toggleCmdRun,
+}
+
 var totalCmd = &cobra.Command{
 	Use:   "total",
 	Short: "Get the total number of tasks",
 	Run:   totalCmdRun,
+}
+
+var clearCmd = &cobra.Command{
+	Use:   "clear",
+	Short: "Clear/Delete all the tasks",
+	Run:   clearCmdRun,
+}
+
+var webServerCmd = &cobra.Command{
+	Use:   "webserver",
+	Short: "Start a web server to manage tasks through a web interface",
+	Run:   webServerCmdRun,
 }
 
 func addCmdRun(cmd *cobra.Command, args []string) {
@@ -70,7 +91,7 @@ func addCmdRun(cmd *cobra.Command, args []string) {
 	}
 	task := args[0]
 
-	if err := tm.AddTask(task); err != nil {
+	if err := tm.AddTask(task, false); err != nil {
 		fmt.Println("Error adding task:", err)
 	} else {
 		fmt.Printf("Task '%s' added!\n", task)
@@ -108,9 +129,11 @@ func deleteCmdRun(cmd *cobra.Command, args []string) {
 	taskId, err := strconv.Atoi(args[0])
 	if err != nil {
 		log.Println(err)
+		return
 	}
 	if err := tm.DeleteTask(taskId); err != nil {
 		fmt.Println("Error deleting task:", err)
+		return
 	}
 	fmt.Printf("Task deleted: %d\n", taskId)
 }
@@ -123,10 +146,42 @@ func updateCmdRun(cmd *cobra.Command, args []string) {
 	taskId, err := strconv.Atoi(args[0])
 	if err != nil {
 		log.Println(err)
+		return
 	}
 	newTask := args[1]
 	if err := tm.UpdateTask(taskId, newTask); err != nil {
 		fmt.Println("Error updating task:", err)
+		return
 	}
 	fmt.Printf("Task updated: %s\n", newTask)
+}
+
+func toggleCmdRun(cmd *cobra.Command, args []string) {
+	if len(args) < 1 {
+		fmt.Println("Please provide an existing task ID.")
+		return
+	}
+	taskId, err := strconv.Atoi(args[0])
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if err := tm.ToggleCompleted(taskId); err != nil {
+		fmt.Println("Error toggling task's status:", err)
+		return
+	}
+	fmt.Printf("Task toggled: %d\n", taskId)
+}
+
+func clearCmdRun(cmd *cobra.Command, args []string) {
+	err := tm.Clear()
+	if err != nil {
+		fmt.Println("Failed to clear the tasks:", err)
+		return
+	}
+	fmt.Println("All the tasks got successfully cleared/deleted!")
+}
+
+func webServerCmdRun(cmd *cobra.Command, args []string) {
+	startWebServer()
 }
