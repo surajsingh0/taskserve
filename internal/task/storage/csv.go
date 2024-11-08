@@ -1,13 +1,11 @@
 package storage
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -103,7 +101,6 @@ func (cs *CSVStorage) DeleteTask(taskId int) error {
 			}
 		} else {
 			taskDeleted = true
-			fmt.Printf("Deleting task: %+v\n", task)
 		}
 	}
 
@@ -183,50 +180,18 @@ func (cs *CSVStorage) TotalTasks() (int, error) {
 	return len(records), nil
 }
 
-func promptForConfirmation(message string) bool {
-	reader := bufio.NewReader(os.Stdin)
-
-	fmt.Print(message)
-
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return false
-	}
-
-	input = strings.TrimSpace(input)
-	input = strings.ToLower(input)
-
-	switch input {
-	case "y", "yes":
-		return true
-	case "n", "no":
-		return false
-	default:
-		fmt.Println("Invalid input. Please type 'yes' or 'no'.")
-		return promptForConfirmation(message)
-	}
-}
-
 func (cs *CSVStorage) Clear() error {
-	if !promptForConfirmation("Are you sure you want to clear all the tasks? (yes/no): ") {
-		fmt.Println("Clear action canceled.")
-		return nil
-	}
-
 	filePath := cs.file.Name()
 	err := cs.file.Close()
 	if err != nil {
-		return fmt.Errorf("failed to close the file: %w", err)
+		return err
 	}
 
 	err = os.Remove(filePath)
 	if err != nil {
-		return fmt.Errorf("failed to delete the file: %w", err)
+		return err
 	}
 	cs.file = nil
-
-	fmt.Printf("File %s deleted successfully.\n", filePath)
 
 	return nil
 }

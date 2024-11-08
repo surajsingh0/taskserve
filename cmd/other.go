@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
+	"strings"
 	"todo/internal/storage_type"
 	"todo/internal/task"
 
@@ -173,7 +176,37 @@ func toggleCmdRun(cmd *cobra.Command, args []string) {
 	fmt.Printf("Task toggled: %d\n", taskId)
 }
 
+func promptForConfirmation(message string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print(message)
+
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading input:", err)
+		return false
+	}
+
+	input = strings.TrimSpace(input)
+	input = strings.ToLower(input)
+
+	switch input {
+	case "y", "yes":
+		return true
+	case "n", "no":
+		return false
+	default:
+		fmt.Println("Invalid input. Please type 'yes' or 'no'.")
+		return promptForConfirmation(message)
+	}
+}
+
 func clearCmdRun(cmd *cobra.Command, args []string) {
+	if !promptForConfirmation("Are you sure you want to clear all the tasks? (yes/no): ") {
+		fmt.Println("Clear action canceled.")
+		return
+	}
+
 	err := tm.Clear()
 	if err != nil {
 		fmt.Println("Failed to clear the tasks:", err)
