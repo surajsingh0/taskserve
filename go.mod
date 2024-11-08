@@ -1,4 +1,4 @@
-module todo
+module github.com/surajsingh0/taskserve
 
 go 1.23.0
 

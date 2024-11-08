@@ -7,8 +7,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"todo/internal/storage_type"
-	"todo/internal/task"
+
+	"github.com/surajsingh0/taskserve/internal/storage_type"
+	"github.com/surajsingh0/taskserve/internal/task"
 
 	"github.com/spf13/cobra"
 )

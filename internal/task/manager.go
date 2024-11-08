@@ -2,8 +2,9 @@ package task
 
 import (
 	"fmt"
-	"todo/internal/storage_type"
-	"todo/internal/task/storage"
+
+	"github.com/surajsingh0/taskserve/internal/storage_type"
+	"github.com/surajsingh0/taskserve/internal/task/storage"
 )
 
 // TaskManager handles task operations using the chosen storage

@@ -1,6 +1,6 @@
 package main
 
-import "todo/cmd"
+import "github.com/surajsingh0/taskserve/cmd"
 
 func main() {
 	defer cmd.Close()
